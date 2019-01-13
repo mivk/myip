@@ -5,6 +5,7 @@
 ##https://unix.stackexchange.com/questions/22615/how-can-i-get-my-external-ip-address-in-a-shell-script/344997#344997
 ## https://unix.stackexchange.com/a/344997/7286
 
+version=0.1
 
 timeout=2   # seconds to wait for a reply before trying next server
 verbose=1   # prints which server was used to STDERR
