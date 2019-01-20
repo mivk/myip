@@ -34,6 +34,10 @@ Not activated yet !
 
 # INSTALL
 
-    curl -L https://github.com/mivk/myip/raw/master/myip > /usr/local/bin/ \
-        && chmod +x /usr/local/bin/myip
+    curl -L https://github.com/mivk/myip/raw/master/myip -O && chmod +x myip && mv -i myip /usr/local/bin/
 
+# TODO
+
+- The install line above doesn't work if `sudo` is needed
+
+- Add options (getopt)
