@@ -21,26 +21,27 @@ dnslist=(
 )
 
 httplist=(
-    4.ifcfg.me
-    alma.ch/myip.cgi
-    api.infoip.io/ip
-    api.ipify.org
-    bot.whatismyipaddress.com
-    canhazip.com
-    checkip.amazonaws.com
-    eth0.me
-    icanhazip.com
-    ident.me
-    ipecho.net/plain
-    ipinfo.io/ip
-    ipof.in/txt
-    ip.tyk.nu
-    l2.io/ip
-    smart-ip.net/myip
-    tnx.nl/ip
-    wgetip.com
-    whatismyip.akamai.com
+	4.ifcfg.me
+	alma.ch/myip.cgi
+	api.infoip.io/ip
+	api.ipify.org
+	bot.whatismyipaddress.com
+	canhazip.com
+	checkip.amazonaws.com
+	eth0.me
+	icanhazip.com
+	ident.me
+	ip.tyk.nu
+	ip1.dynupdate.no-ip.com
+	ipecho.net/plain
+	ipinfo.io/ip
+	ipof.in/txt
 	ipv4.wtfismyip.com/text
+	l2.io/ip
+	smart-ip.net/myip
+	tnx.nl/ip
+	wgetip.com
+	whatismyip.akamai.com
 )
 
 # For ipv6:	wtfismyip.com/text
