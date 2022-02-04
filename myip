@@ -22,7 +22,6 @@ dnslist=(
 
 httplist=(
 	4.ifcfg.me
-	alma.ch/myip.cgi
 	api.infoip.io/ip
 	api.ipify.org
 	bot.whatismyipaddress.com
@@ -30,7 +29,7 @@ httplist=(
 	checkip.amazonaws.com
 	eth0.me
 	icanhazip.com
-	ident.me
+	v4.ident.me
 	ip.tyk.nu
 	ip1.dynupdate.no-ip.com
 	ipecho.net/plain
@@ -44,7 +43,9 @@ httplist=(
 	whatismyip.akamai.com
 )
 
-# For ipv6:	wtfismyip.com/text
+# For ipv6:
+#	v4.ident.me
+#	ipv6.wtfismyip.com/text
 
 
 
