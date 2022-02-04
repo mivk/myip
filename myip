@@ -5,49 +5,36 @@
 ##https://unix.stackexchange.com/questions/22615/how-can-i-get-my-external-ip-address-in-a-shell-script/344997#344997
 ## https://unix.stackexchange.com/a/344997/7286
 
-version=0.1
-
-timeout=2   # seconds to wait for a reply before trying next server
-verbose=1   # prints which server was used to STDERR
-
-dnslist=(
-    "dig +short            myip.opendns.com        @resolver1.opendns.com"
-    "dig +short            myip.opendns.com        @resolver2.opendns.com"
-    "dig +short            myip.opendns.com        @resolver3.opendns.com"
-    "dig +short            myip.opendns.com        @resolver4.opendns.com"
-    "dig +short    -t txt  o-o.myaddr.l.google.com @ns1.google.com"
-    "dig +short -4 -t a    whoami.akamai.net       @ns1-1.akamaitech.net"
-    "dig +short            whoami.akamai.net       @ns1-1.akamaitech.net"
-)
-
-httplist=(
-	4.ifcfg.me
-	api.infoip.io/ip
-	api.ipify.org
-	bot.whatismyipaddress.com
-	canhazip.com
-	checkip.amazonaws.com
-	eth0.me
-	icanhazip.com
-	v4.ident.me
-	ip.tyk.nu
-	ip1.dynupdate.no-ip.com
-	ipecho.net/plain
-	ipinfo.io/ip
-	ipof.in/txt
-	ipv4.wtfismyip.com/text
-	l2.io/ip
-	smart-ip.net/myip
-	tnx.nl/ip
-	wgetip.com
-	whatismyip.akamai.com
-)
-
-# For ipv6:
-#	v4.ident.me
-#	ipv6.wtfismyip.com/text
+version=0.2
+me=$(basename "$0")
 
 
+#### FUNCTIONS
+
+usage() {
+        cat <<EOF
+
+    Usage: $me [options]
+
+    Options:
+        -c          : check all DNS and HTTP providers and print results.
+        -t x        : Timeout in seconds (per server; default: 2)
+        -d          : Debug
+        -v          : Verbose
+        -h          : This help
+EOF
+}
+
+die() {
+    echo "$@" 1>&2
+    exit 1;
+}
+
+warn() {
+    er="$@"
+    echo "$er" 1>&2
+    errors+=("$er")
+}
 
 # function to shuffle the global array "array"
 shuffle() {
@@ -62,45 +49,119 @@ shuffle() {
 }
 
 
+#### PARSE ARGUMENTS
+
+while getopts "ct:dvh" opt; do
+    case $opt in
+        c) check_all=1;;
+        t) timeout=shift;;
+        d) debug=1; ((verbose++));;
+        v) verbose=1;;
+        h) usage; exit;;
+    esac
+done
+shift $((OPTIND -1))
+
+(( timeout )) || timeout=2
+
+inet_family="-4" # "-4" or "-6" (but -6 not implemented yet!)
+
+#### INIT LISTS
+
+dnslist=(
+    "dig +short         myip.opendns.com         @resolver1.opendns.com"
+    "dig +short         myip.opendns.com         @resolver2.opendns.com"
+    "dig +short         myip.opendns.com         @resolver3.opendns.com"
+    "dig +short         myip.opendns.com         @resolver4.opendns.com"
+    "dig +short -t TXT  o-o.myaddr.l.google.com  @ns1.google.com        $inet_family"
+    "dig +short -t A    whoami.akamai.net        @ns1-1.akamaitech.net  $inet_family"
+)
+
+httplist=(
+    api.infoip.io/ip
+    api.ipify.org
+    bot.whatismyipaddress.com
+    canhazip.com
+    checkip.amazonaws.com
+    eth0.me
+    icanhazip.com
+    icanhazip.com/s
+    ident.me
+    ifconfig.co
+    ifconfig.io
+    ifconfig.me
+    ip-adresim.app
+    ip.tyk.nu
+    ip1.dynupdate.no-ip.com
+    ipaddress.sh
+    ipecho.net/plain
+    ipinfo.io/ip
+    l2.io/ip
+    myexternalip.com/raw
+    myip.dnsomatic.com
+    smart-ip.net/myip
+    tnx.nl/ip
+    trackip.net/ip
+    wgetip.com
+    whatismyip.akamai.com
+    wtfismyip.com/text
+)
+
+
+#### TRY DNS
+
 ## if we have dig and a list of dns methods, try that first
 if hash dig 2>/dev/null && [ ${#dnslist[*]} -gt 0 ]; then
     eval array=( \"\${dnslist[@]}\" )
-    shuffle
+    # shuffle the array, except if we are in check_all mode
+    (( check_all )) || shuffle
 
     for cmd in "${array[@]}"; do
-        [ "$verbose" == 1 ] && echo Trying: $cmd 1>&2
-        ip=$(timeout $timeout $cmd)
-        if [ -n "$ip" ]; then
-            echo $ip
+        (( verbose )) && echo Trying: $cmd 1>&2
+        ip=$( timeout $timeout $cmd )
+        ip="${ip//\"}" # remove quotes (added by google's DNS reply)
+        if (( check_all )); then
+            printf "%-15s    %s\n" "$ip" "$cmd"
+        else
+            [ -n "$ip" ] && echo $ip
             exit
         fi
     done
 fi
 
 
+#### AND NOW HTTP
+
 # if we haven't succeeded with DNS, try HTTP
 
 if [ ${#httplist[*]} == 0 ]; then
-    echo "No hosts in httplist array!" >&2
-    exit 1
+    die "No hosts in httplist array!"
 fi
 
-# use curl or wget, depending on which one we find
-curl_or_wget=$(if hash curl 2>/dev/null; then echo "curl -s"; elif hash wget 2>/dev/null; then echo "wget -qO-"; fi);
-
-if [ -z "$curl_or_wget" ]; then
-    echo "Neither curl nor wget found. Cannot use http method." >&2
-    exit 1
+# use curl or wget, depending on which one we find, and force IPv4
+if hash Xcurl 2>/dev/null; then
+    curl_or_wget="curl $inet_family -s"
+elif hash wget 2>/dev/null; then
+    curl_or_wget="wget $inet_family -qO-"
+else
+    die "Neither curl nor wget found. Cannot use http method."
 fi
 
 eval array=( \"\${httplist[@]}\" )
-shuffle
+# shuffle the array, except if we are in check_all mode
+(( check_all )) || shuffle
 
 for url in "${array[@]}"; do
-	[ "$verbose" == 1 ] && echo Trying: $curl_or_wget "$url" 1>&2
-	ip=$(timeout $timeout $curl_or_wget "$url")
-    if [ -n "$ip" ]; then
-        echo $ip
+    (( verbose )) && echo Trying: $curl_or_wget "$url" 1>&2
+    ip=$( timeout $timeout $curl_or_wget "$url" )
+    if (( ${#ip} > 15 )); then # > 39 for ipv6?
+        (( debug )) && warn "# ip string seems too long: ${#ip} characters from $url : ${ip:0:20}..."
+        continue
+    fi
+    if (( check_all )); then
+        printf "%-15s    %s\n" "$ip" "$url"
+    else
+        [ -n "$ip" ] && echo $ip
         exit
     fi
 done
