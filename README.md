@@ -14,23 +14,25 @@ The IP address found is printed to stdout.
 
 # OPTIONS
 
-Not activated yet !
+- **-c**
 
-- **-?** or **-h**
+    Check all defined DNS and HTTP providers and print results. Used to find servers which don't work anymore.
 
-    Print a brief help message and exit.
+- **-t x**
 
-- **--help**
+    Timeout in seconds for each request. Default: 2 seconds.
 
-    Print the manual page and exit.
+- **-d**
 
-- **-v** or **--verbose**
+     Debug
 
-    Print details of conversions done
+- **-v**
 
-- **-d** or **--debug**
+     Verbose
 
-    Print even more details of argument analysis and conversions
+- **-h**
+
+     Help. Show these options
 
 # INSTALL
 
@@ -38,6 +40,6 @@ Not activated yet !
 
 # TODO
 
-- The install line above doesn't work if `sudo` is needed
+- Adapt for IPv6
 
-- Add options (getopt)
+- The install line above doesn't work if `sudo` is needed
