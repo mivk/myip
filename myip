@@ -139,7 +139,7 @@ if [ ${#httplist[*]} == 0 ]; then
 fi
 
 # use curl or wget, depending on which one we find, and force IPv4
-if hash Xcurl 2>/dev/null; then
+if hash curl 2>/dev/null; then
     curl_or_wget="curl $inet_family -s"
 elif hash wget 2>/dev/null; then
     curl_or_wget="wget $inet_family -qO-"
